@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dental Analysis Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .scan-animation {
+            animation: scan 2s infinite linear;
+        }
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(100px); }
+            100% { transform: translateY(0); }
+        }
+        .parameter-gauge {
+            height: 8px;
+            border-radius: 4px;
+            transition: width 1.5s ease-in-out;
+        }
+        .parameter-card {
+            transition: all 0.3s ease;
+        }
+        .parameter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 md:p-8">
+        <nav class="bg-white rounded-lg shadow-lg p-4 mb-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-cyan-700">DentalAI Analytics</h1>
+            <div class="flex items-center gap-4">
+                <button class="text-cyan-600 hover:text-cyan-800">
+                    <i class="bi bi-gear-fill text-xl"></i>
+                </button>
+                <div class="bg-cyan-100 rounded-full p-2">
+                    <i class="bi bi-person-circle text-xl text-cyan-700"></i>
+                </div>
+            </div>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- X-Ray Analysis Section -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 text-cyan-800">X-Ray Analysis</h2>
+                    <div class="border-2 border-dashed border-cyan-300 rounded-lg p-4 text-center mb-4">
+                        <div id="xrayPreview" class="mb-4 h-48 md:h-64 bg-gray-100 rounded flex items-center justify-center">
+                            <i class="bi bi-image text-4xl text-gray-400"></i>
+                        </div>
+                        <input type="file" id="xrayInput" accept="image/*" class="hidden">
+                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button onclick="document.getElementById('xrayInput').click()" class="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition flex items-center justify-center">
+                                <i class="bi bi-upload mr-2"></i> Upload X-Ray Image
+                            </button>
+                            <button id="analyzeXray" class="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-600 transition flex items-center justify-center">
+                                <i class="bi bi-search mr-2"></i> Analyze X-Ray
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intraoral Scanning Section -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 text-cyan-800">Intraoral Scanning</h2>
+                    <div class="relative h-48 md:h-64 bg-gray-100 rounded-lg mb-4">
+                        <div id="scanLine" class="absolute w-full h-1 bg-cyan-500 scan-animation"></div>
+                        <div class="flex items-center justify-center h-full">
+                            <i class="bi bi-camera text-4xl text-gray-400"></i>
+                        </div>
+                    </div>
+                    <button id="startScan" class="w-full bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-600 transition flex items-center justify-center">
+                        <i class="bi bi-play-fill mr-2"></i> Start Scanning
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column (Results and Clinical Parameters) -->
+            <div class="space-y-6">
+                <!-- Patient Info Card -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-cyan-800">Patient Information</h2>
+                        <span class="text-sm bg-cyan-100 text-cyan-800 px-2 py-1 rounded">ID: P-29845</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Name:</span>
+                            <span class="font-medium">John Doe</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Age:</span>
+                            <span class="font-medium">42</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Last Visit:</span>
+                            <span class="font-medium">03/15/2023</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clinical Parameters -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 text-cyan-800">Clinical Parameters</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="parameter-card bg-gradient-to-br from-cyan-50 to-white p-3 rounded-lg border border-cyan-100">
+                            <h3 class="text-sm text-cyan-700 font-medium">Bone Density</h3>
+                            <div class="mt-2 mb-1 flex items-center">
+                                <div id="boneDensityValue" class="font-bold text-xl text-cyan-800">--</div>
+                                <div class="text-xs text-gray-500 ml-1">g/cm²</div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="boneDensityBar" class="parameter-gauge bg-cyan-600" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="parameter-card bg-gradient-to-br from-cyan-50 to-white p-3 rounded-lg border border-cyan-100">
+                            <h3 class="text-sm text-cyan-700 font-medium">Periodontal Depth</h3>
+                            <div class="mt-2 mb-1 flex items-center">
+                                <div id="periodontalValue" class="font-bold text-xl text-cyan-800">--</div>
+                                <div class="text-xs text-gray-500 ml-1">mm</div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="periodontalBar" class="parameter-gauge bg-cyan-600" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="parameter-card bg-gradient-to-br from-cyan-50 to-white p-3 rounded-lg border border-cyan-100">
+                            <h3 class="text-sm text-cyan-700 font-medium">Enamel Thickness</h3>
+                            <div class="mt-2 mb-1 flex items-center">
+                                <div id="enamelValue" class="font-bold text-xl text-cyan-800">--</div>
+                                <div class="text-xs text-gray-500 ml-1">mm</div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="enamelBar" class="parameter-gauge bg-cyan-600" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="parameter-card bg-gradient-to-br from-cyan-50 to-white p-3 rounded-lg border border-cyan-100">
+                            <h3 class="text-sm text-cyan-700 font-medium">Tissue Inflammation</h3>
+                            <div class="mt-2 mb-1 flex items-center">
+                                <div id="inflammationValue" class="font-bold text-xl text-cyan-800">--</div>
+                                <div class="text-xs text-gray-500 ml-1">score</div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="inflammationBar" class="parameter-gauge bg-cyan-600" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section (Full Width) -->
+            <div class="bg-white p-6 rounded-lg shadow-lg lg:col-span-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-cyan-800">Analysis Results</h2>
+                    <span id="analysisDate" class="text-sm text-gray-500">--</span>
+                </div>
+                <div id="results" class="space-y-4">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-medium text-cyan-700 mb-3">Diagnostic Predictions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Bone Loss Risk:</span>
+                                    <span id="boneLossPercent">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="boneLossBar" class="bg-cyan-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Oral Cancer Risk:</span>
+                                    <span id="cancerRiskPercent">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="cancerRiskBar" class="bg-cyan-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Periodontal Disease:</span>
+                                    <span id="periodontalPercent">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="periodontalDiseaseBar" class="bg-cyan-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Caries Probability:</span>
+                                    <span id="cariesPercent">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="cariesBar" class="bg-cyan-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="recommendations" class="p-4 bg-cyan-50 rounded-lg hidden">
+                        <div class="flex items-center mb-2">
+                            <i class="bi bi-lightbulb-fill text-cyan-600 mr-2"></i>
+                            <h3 class="font-medium text-cyan-700">AI Recommendations</h3>
+                        </div>
+                        <ul class="list-disc list-inside text-cyan-600 ml-2"></ul>
+                    </div>
+                    
+                    <div id="treatmentPlan" class="p-4 bg-gray-50 rounded-lg hidden">
+                        <div class="flex items-center mb-2">
+                            <i class="bi bi-clipboard2-pulse-fill text-cyan-700 mr-2"></i>
+                            <h3 class="font-medium text-cyan-700">Suggested Treatment Plan</h3>
+                        </div>
+                        <div class="space-y-2 mt-3">
+                            <div class="flex items-start">
+                                <i class="bi bi-1-circle-fill text-cyan-600 mr-2 mt-0.5"></i>
+                                <div>
+                                    <p class="font-medium">Immediate Care</p>
+                                    <p class="text-sm text-gray-600">Deep cleaning and scaling to address early signs of bone loss</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="bi bi-2-circle-fill text-cyan-600 mr-2 mt-0.5"></i>
+                                <div>
+                                    <p class="font-medium">Follow-up</p>
+                                    <p class="text-sm text-gray-600">Schedule 3-month follow-up for reassessment</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="bi bi-3-circle-fill text-cyan-600 mr-2 mt-0.5"></i>
+                                <div>
+                                    <p class="font-medium">Long-term</p>
+                                    <p class="text-sm text-gray-600">Consider preventive measures for identified risk areas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // X-Ray Analysis Functionality
+        document.getElementById('xrayInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('xrayPreview').innerHTML = `
+                        <img src="${e.target.result}" class="max-h-full max-w-full object-contain" />
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Analyze X-Ray
+        document.getElementById('analyzeXray').addEventListener('click', function() {
+            simulateAnalysis();
+        });
+
+        // Start Scan
+        document.getElementById('startScan').addEventListener('click', function() {
+            simulateAnalysis();
+        });
+
+        function simulateAnalysis() {
+            // Set current date for analysis
+            const now = new Date();
+            document.getElementById('analysisDate').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            
+            // Clinical Parameters
+            setTimeout(() => {
+                // Bone Density
+                document.getElementById('boneDensityValue').textContent = '0.82';
+                document.getElementById('boneDensityBar').style.width = '68%';
+                
+                // Periodontal Depth
+                document.getElementById('periodontalValue').textContent = '4.2';
+                document.getElementById('periodontalBar').style.width = '75%';
+                
+                // Enamel Thickness
+                document.getElementById('enamelValue').textContent = '1.8';
+                document.getElementById('enamelBar').style.width = '62%';
+                
+                // Inflammation Score
+                document.getElementById('inflammationValue').textContent = '2.1';
+                document.getElementById('inflammationBar').style.width = '42%';
+            }, 500);
+            
+            // Simulate loading risk assessments
+            setTimeout(() => {
+                const boneLossBar = document.getElementById('boneLossBar');
+                const cancerRiskBar = document.getElementById('cancerRiskBar');
+                const periodontalDiseaseBar = document.getElementById('periodontalDiseaseBar');
+                const cariesBar = document.getElementById('cariesBar');
+                
+                // Set values
+                boneLossBar.style.width = '30%';
+                document.getElementById('boneLossPercent').textContent = '30%';
+                
+                cancerRiskBar.style.width = '15%';
+                document.getElementById('cancerRiskPercent').textContent = '15%';
+                
+                periodontalDiseaseBar.style.width = '45%';
+                document.getElementById('periodontalPercent').textContent = '45%';
+                
+                cariesBar.style.width = '22%';
+                document.getElementById('cariesPercent').textContent = '22%';
+                
+                // Change colors based on risk levels
+                if (parseInt(boneLossBar.style.width) > 20) {
+                    boneLossBar.classList.remove('bg-cyan-600');
+                    boneLossBar.classList.add('bg-yellow-500');
+                }
+                
+                if (parseInt(periodontalDiseaseBar.style.width) > 40) {
+                    periodontalDiseaseBar.classList.remove('bg-cyan-600');
+                    periodontalDiseaseBar.classList.add('bg-yellow-500');
+                }
+            }, 1000);
+
+            // Show recommendations
+            setTimeout(() => {
+                const recommendations = document.getElementById('recommendations');
+                recommendations.classList.remove('hidden');
+                recommendations.querySelector('ul').innerHTML = `
+                    <li class="mb-2">Schedule regular dental check-ups every 4 months</li>
+                    <li class="mb-2">Maintain proper oral hygiene with twice daily flossing</li>
+                    <li class="mb-2">Consider additional periodontal screening in 6 months</li>
+                    <li class="mb-2">Recommend bone density monitoring for early intervention</li>
+                `;
+                
+                // Show treatment plan
+                document.getElementById('treatmentPlan').classList.remove('hidden');
+            }, 2000);
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
